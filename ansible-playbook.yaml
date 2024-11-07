@@ -1,0 +1,43 @@
+---
+- name: Install and configure NGINX
+  hosts: all
+  become: true       # Use sudo to run the tasks with root privileges
+  tasks:
+  
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Start and enable NGINX service
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Configure NGINX default page
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head><title>Welcome to NGINX</title></head>
+          <body><h1>NGINX is up and running!</h1></body>
+          </html>
+
+    - name: Ensure NGINX configuration is correct
+      command: nginx -t
+      register: nginx_config_test
+      ignore_errors: yes
+
+    - name: Check NGINX configuration test result
+      debug:
+        var: nginx_config_test.stdout_lines
+
+    - name: Restart NGINX if configuration changed
+      service:
+        name: nginx
+        state: restarted
+      when: nginx_config_test.rc == 0
+
