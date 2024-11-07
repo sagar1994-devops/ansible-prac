@@ -3,6 +3,8 @@
   hosts: all
   vars:
     msg: "NGINX is running from dev"
+  vars_files:
+    - vars.yaml     
   become: true       # Use sudo to run the tasks with root privileges
   tasks:
   
